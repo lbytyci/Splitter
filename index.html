@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>✦ Splitter i Faturave: Vintage Edition ✦</title>
+    <style>
+        
+        /* Dizajni */
+        :root {
+            --bg-color: #1b192e;         
+            --panel-bg: #fffcf2;         
+            --accent-pink: #9f99d3;      
+            --accent-purple: #c3bef0;    
+            --text-dark: #232135;        
+            --border-thick: 3px solid #1b192e;
+            --retro-shadow: 5px 5px 0px #1b192e;
+        }
+
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            font-weight: bold;
+            margin: 0; /* Heqim margin e jashtëm për shkak të shiritit sipër */
+            background-color: var(--bg-color); 
+            color: #fff;
+            background-image: radial-gradient(#3a3561 1px, transparent 1px); 
+            background-size: 20px 20px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* SHIRITI I RI RETRO SIPËR */
+        .custom-titlebar {
+            height: 35px;
+            background: #2b2640;
+            border-bottom: var(--border-thick);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 15px;
+            -webkit-app-region: drag; /* Kjo e bën dritaren të lëvizshme me maus */
+            user-select: none;
+        }
+
+        .titlebar-title {
+            font-size: 12px;
+            color: var(--accent-pink);
+            letter-spacing: 1px;
+        }
+
+        .titlebar-controls {
+            display: flex;
+            height: 100%;
+            -webkit-app-region: no-drag; /* Butonat nuk duhet të tërheqin dritaren */
+        }
+
+        .win-btn {
+            background: transparent;
+            border: none;
+            border-left: var(--border-thick);
+            color: #fff;
+            width: 45px;
+            height: 100%;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .win-btn:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .win-btn-minimize:hover { background-color: var(--accent-purple); color: var(--text-dark); }
+        .win-btn-maximize:hover { background-color: #62589e; }
+        .win-btn-close:hover { background-color: #ff6584; color: var(--text-dark); }
+
+        /* PËRMBAJTJA E PËRPANUAR */
+        .Kontejneri { 
+            display: flex; 
+            gap: 20px; 
+            padding: 15px;
+            box-sizing: border-box;
+            flex: 1;
+            height: calc(100vh - 35px);
+        }
+
+        .paneli-majt { 
+            flex: 0.35; 
+            background: var(--panel-bg); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: var(--border-thick);
+            box-shadow: var(--retro-shadow);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Kjo e shtyn butonin e ri automatikisht në fund */
+        }
+
+        /* Kontejneri për hapat që të mos ndikohen nga rregullimi i fundit */
+        .hapat-grupi {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .paneli-djatht { 
+            flex: 1.65; 
+            background: #2b2640; 
+            border-radius: 12px; 
+            border: var(--border-thick);
+            box-shadow: var(--retro-shadow);
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+            position: relative;
+            overflow: hidden;
+            padding: 0; 
+        }
+
+        .paneli-djatht::before {
+            content: "SCREEN MODE: MAX-VIEW";
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            font-size: 9px;
+            color: var(--accent-pink);
+            opacity: 0.7;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #565275;
+        }
+
+        input, select { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 6px 0; 
+            box-sizing: border-box; 
+            border-radius: 6px; 
+            border: var(--border-thick);
+            background-color: #fff;
+            color: var(--text-dark);
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            background-color: var(--accent-purple);
+        }
+
+        button { 
+            background-color: var(--accent-pink); 
+            color: var(--text-dark); 
+            border: var(--border-thick);
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 6px;
+            cursor: pointer; 
+            font-family: inherit;
+            font-weight: 900; 
+            font-size: 14px;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0px #1b192e;
+            transition: all 0.1s ease;
+            width: 100%;
+        }
+
+        button:hover { 
+            background-color: var(--accent-purple);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #1b192e;
+        }
+
+        button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #1b192e;
+        }
+
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            background: white;
+            border-radius: 9px;
+        }
+
+        #pdf-mesazh {
+            color: var(--accent-purple);
+            text-shadow: 1px 1px 0px #000;
+            font-size: 14px;
+            text-align: center;
+            animation: blink 1.5s infinite;
+        }
+
+        h3 {
+            color: #ff7597;
+            border-bottom: 2px dashed var(--text-dark);
+            padding-bottom: 5px;
+            margin-top: 0;
+            font-size: 16px;
+        }
+
+        /* DIZAJNI I RI: MONOKROM, MINIMALIST DHE SERIOZ */
+        .classic-link {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #2b2640;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border: 2px solid #1b192e;
+            border-radius: 6px;
+            transition: all 0.1s ease;
+        }
+
+        .classic-link:hover {
+            background-color: #1b192e;
+            color: #ffffff;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="custom-titlebar">
+        <div class="titlebar-title">✦ INVOICE SPLITTER SYSTEM v1.0 ✦</div>
+        <div class="titlebar-controls">
+            <button class="win-btn win-btn-minimize" onclick="window.electronAPI.minimize()">🗕</button>
+            <button class="win-btn win-btn-maximize" onclick="window.electronAPI.maximize()">🗖</button>
+            <button class="win-btn win-btn-close" onclick="window.electronAPI.close()">🗙</button>
+        </div>
+    </div>
+
+    <div class="Kontejneri">
+        <div class="paneli-majt" id="hapat-kontejner">
+            <!-- Pjesa e lartë e panelit të majtë -->
+            <div class="hapat-grupi">
+                <div id="hapi-1">
+                    <label>✦ Zgjidh Zonën:</label>
+                    <select id="zona">
+                        <option value="ARB">BARAZIMI - ARB</option>
+                        <option value="FK">BARAZIMI - FK</option>
+                    </select>
+
+                    <label>✦ Emri i Folderit të Ditës:</label>
+                    <input type="text" id="subFolder" value="26 Qershor 2026">
+
+                    <button onclick="kerkoFolderin()">Kërko Skedarët ➔</button>
+                </div>
+
+                <div id="hapi-2" style="display:none;">
+                    <label>✦ Zgjidh faturën kryesore:</label>
+                    <select id="skedaret-lista"></select>
+                    
+                    <label>✦ Pjesa e parë e emrit (Prefix):</label>
+                    <input type="text" id="prefix" value="PSI-FK-26-">
+
+                    <button onclick="niseSplit()">Nis Procesin [SPLIT] ⚙</button>
+                </div>
+
+                <div id="hapi-3" style="display:none;">
+                    <h3 id="progresi-titull">FATURA_LOADED: 1 / X</h3>
+                    <p style="font-size: 12px; margin-bottom: 15px;">Shiko ekranin në të djathtë dhe shkruaj ID-në:</p>
+                    <label>Numri i Vektorit/Faturës:</label>
+                    <input type="number" id="numri-fatures" placeholder="psh. 1251" autofocus onkeydown="kontrolloEnter(event)">
+                    <button onclick="riemertoDheKaloTjetren()">Ruaj & Vazhdo [ENTER]</button>
+                </div>
+
+                <div id="hapi-reset" style="display:none;">
+                    <h3>PUNË E KRYER! 🎉</h3>
+                    <p style="font-size: 13px;">Të gjitha faturat u riemërtuan me sukses.</p>
+                    <button onclick="rinisAplikacionin()" style="background-color: #c3bef0;">Fillo Folder të Ri ↺</button>
+                </div>
+            </div>
+
+            <!-- BUTONI I INTEGRUAR NË FUND TË PANELIT TË MAJTË (PA ROZË DHE PA NEON) -->
+            <a href="multi-print.html" class="classic-link">
+                [ GJENERUESI NË VARG ]
+            </a>
+        </div>
+
+        <div class="paneli-djatht" id="pdf-shikues">
+            <p id="pdf-mesazh">▲ Sfondi gati. Dokumenti do të ngarkohet këtu...</p>
+        </div>
+    </div>
+
+    <script>
+        let finalPathGlobal = '';
+        let skedaretNdarëGlobal = [];
+        let indeksiAktual = 0;
+
+        function kontrolloEnter(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                riemertoDheKaloTjetren();
+            }
+        }
+
+        function rinisAplikacionin() {
+            finalPathGlobal = '';
+            skedaretNdarëGlobal = [];
+            indeksiAktual = 0;
+            document.getElementById('hapi-reset').style.display = 'none';
+            document.getElementById('hapi-1').style.display = 'block';
+            document.getElementById('pdf-shikues').innerHTML = `<p id="pdf-mesazh">▲ Sfondi gati. Dokumenti do të ngarkohet këtu...</p>`;
+        }
+
+        async function kerkoFolderin() {
+            const zona = document.getElementById('zona').value;
+            const subFolder = document.getElementById('subFolder').value;
+            
+            try {
+                const { pdfFiles, finalPath } = await window.electronAPI.invoke('get-pdf-files', { zona, subFolder });
+                finalPathGlobal = finalPath;
+
+                const select = document.getElementById('skedaret-lista');
+                select.innerHTML = '';
+                pdfFiles.forEach(file => {
+                    let opt = document.createElement('option');
+                    opt.value = file;
+                    opt.innerHTML = file;
+                    select.appendChild(opt);
+                });
+
+                document.getElementById('prefix').value = zona === 'ARB' ? 'PSI-ARB-26-' : 'PSI-FK-26-';
+                document.getElementById('hapi-1').style.display = 'none';
+                document.getElementById('hapi-2').style.display = 'block';
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function niseSplit() {
+            const skedariMadh = document.getElementById('skedaret-lista').value;
+            const filePath = finalPathGlobal + '/' + skedariMadh;
+
+            document.getElementById('pdf-mesazh').innerHTML = "⏳ DUKE NDARË FATURAT... JU LUTEM PRISNI...";
+
+            try {
+                skedaretNdarëGlobal = await window.electronAPI.invoke('split-pdf', { filePath, finalPath: finalPathGlobal });
+                indeksiAktual = 0;
+                shfaqFaturenAktuale();
+            } catch (err) {
+                alert("Gabim gjatë split: " + err.message);
+            }
+        }
+
+        function shfaqFaturenAktuale() {
+            if (indeksiAktual >= skedaretNdarëGlobal.length) {
+                document.getElementById('hapi-3').style.display = 'none';
+                document.getElementById('hapi-reset').style.display = 'block';
+                document.getElementById('pdf-shikues').innerHTML = "<h3 style='color: #ffb3c6; text-align:center; padding: 20px; font-size: 20px;'>✦ PROCESI PËRFUNDOI ME SUKSES TË PLOTË! ✦</h3>";
+                return;
+            }
+
+            document.getElementById('hapi-2').style.display = 'none';
+            document.getElementById('hapi-3').style.display = 'block';
+            
+            document.getElementById('progresi-titull').innerHTML = `✦ FATURA: ${indeksiAktual + 1} / ${skedaretNdarëGlobal.length}`;
+            document.getElementById('numri-fatures').value = '';
+            document.getElementById('numri-fatures').focus();
+
+            const fatura = skedaretNdarëGlobal[indeksiAktual];
+            document.getElementById('pdf-shikues').innerHTML = `<iframe src="data:application/pdf;base64,${fatura.base64}"></iframe>`;
+        }
+
+        async function riemertoDheKaloTjetren() {
+            const numri = document.getElementById('numri-fatures').value;
+            const prefix = document.getElementById('prefix').value;
+            
+            if(!numri) {
+                alert("Ju lutem shkruani numrin e faturës!");
+                return;
+            }
+
+            const fatura = skedaretNdarëGlobal[indeksiAktual];
+
+            try {
+                await window.electronAPI.invoke('rename-invoice', {
+                    oldPath: fatura.rrugaPerkohshme,
+                    finalPath: finalPathGlobal,
+                    prefix,
+                    number: parseInt(numri, 10)
+                });
+
+                indeksiAktual++;
+                shfaqFaturenAktuale();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+    </script>
+</body>
+</html>
