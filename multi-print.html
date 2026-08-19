@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>✦ Gjeneruesi në Varg ✦</title>
+    <style>
+        :root {
+            --bg-color: #1b192e;          
+            --panel-bg: #fffcf2;          
+            --accent-pink: #9f99d3;       
+            --accent-purple: #c3bef0;     
+            --text-dark: #232135;         
+            --border-thick: 3px solid #1b192e;
+            --retro-shadow: 5px 5px 0px #1b192e;
+        }
+
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            font-weight: bold;
+            margin: 0;
+            background-color: var(--bg-color); 
+            color: #fff;
+            background-image: radial-gradient(#3a3561 1px, transparent 1px); 
+            background-size: 20px 20px;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .custom-titlebar {
+            height: 35px;
+            background: #2b2640;
+            border-bottom: var(--border-thick);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 15px;
+            -webkit-app-region: drag;
+            user-select: none;
+        }
+
+        .titlebar-title { font-size: 12px; color: var(--accent-pink); letter-spacing: 1px; }
+
+        .titlebar-controls { display: flex; height: 100%; -webkit-app-region: no-drag; }
+
+        .win-btn {
+            background: transparent; border: none; border-left: var(--border-thick);
+            color: #fff; width: 45px; height: 100%; cursor: pointer;
+            font-family: monospace; font-size: 14px; display: flex;
+            align-items: center; justify-content: center; margin: 0; padding: 0;
+        }
+
+        .win-btn-minimize:hover { background-color: var(--accent-purple); color: var(--text-dark); }
+        .win-btn-maximize:hover { background-color: #62589e; }
+        .win-btn-close:hover { background-color: #ff6584; color: var(--text-dark); }
+
+        .Kontejneri { display: flex; gap: 20px; padding: 15px; box-sizing: border-box; flex: 1; height: calc(100vh - 35px); }
+
+        .paneli-majt { 
+            flex: 0.35; background: var(--panel-bg); padding: 20px; border-radius: 12px; 
+            border: var(--border-thick); box-shadow: var(--retro-shadow); color: var(--text-dark);
+            display: flex; flex-direction: column; justify-content: space-between;
+            overflow-y: auto;
+        }
+
+        .paneli-djatht { 
+            flex: 1.65; background: #2b2640; border-radius: 12px; border: var(--border-thick);
+            box-shadow: var(--retro-shadow); display: flex; align-items: center; 
+            justify-content: center; height: 100%; position: relative;
+        }
+
+        label { display: block; margin-top: 10px; font-size: 11px; color: #565275; text-transform: uppercase; }
+        
+        input, select { 
+            width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; 
+            border-radius: 6px; border: var(--border-thick); font-weight: bold; font-family: inherit;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 10px;
+            color: var(--text-dark);
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .checkbox-container input {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        button { 
+            background-color: var(--accent-pink); color: var(--text-dark); border: var(--border-thick);
+            padding: 12px; margin-top: 12px; border-radius: 6px; cursor: pointer; 
+            font-weight: 900; width: 100%; box-shadow: 4px 4px 0px #1b192e; text-transform: uppercase;
+        }
+        button:hover { background-color: var(--accent-purple); transform: translate(-2px, -2px); }
+
+        .classic-link {
+            display: block; text-align: center; padding: 10px; margin-top: 15px;
+            background-color: #2b2640; color: #ffffff; text-decoration: none;
+            font-size: 11px; border: 2px solid #1b192e; border-radius: 6px;
+        }
+        #pdf-mesazh { color: var(--accent-purple); font-size: 14px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="custom-titlebar">
+        <div class="titlebar-title">✦ BATCH INVOICE GENERATOR & PRINTER v1.0 ✦</div>
+        <div class="titlebar-controls">
+            <button class="win-btn win-btn-minimize" onclick="window.electronAPI.minimize()">🗕</button>
+            <button class="win-btn win-btn-maximize" onclick="window.electronAPI.maximize()">🗖</button>
+            <button class="win-btn win-btn-close" onclick="window.electronAPI.close()">🗙</button>
+        </div>
+    </div>
+
+    <div class="Kontejneri">
+        <div class="paneli-majt">
+            <div>
+                <label>✦ 1. Ngarko Template-in (Excel):</label>
+                <input type="file" id="templateFile" accept=".xlsx" onchange="lexoKodinNgaTemplate(event)">
+
+                <label>✦ 2. Kodi Fillestar (I detektuar nga Y16):</label>
+                <input type="text" id="startCode" placeholder="Zgjidhni skedarin më sipër...">
+
+                <label>✦ 3. Sasia e Faturave për Gjenerim:</label>
+                <input type="number" id="quantity" value="10" min="1" max="500">
+
+                <label style="margin-top: 15px; font-weight: 900;">✦ FORMATET QË DUA TË RUHEN:</label>
+                
+                <label class="checkbox-container">
+                    <input type="checkbox" id="keepExcel" checked>
+                    <b>1. Ruaj Excelet Individuale</b>
+                </label>
+
+                <label class="checkbox-container">
+                    <input type="checkbox" id="generatePdf">
+                    <b>2. Ruaj PDF-të Individuale</b>
+                </label>
+
+                <label class="checkbox-container">
+                    <input type="checkbox" id="mergePdf">
+                    <b>3. Ruaj PDF Grupor (1 skedar me të gjitha)</b>
+                </label>
+
+                <button onclick="gjeneroFaturatMenyraA()">Gjenero Faturat ⚙</button>
+            </div>
+
+            <a href="index.html" class="classic-link">
+                [ ◄ KTHEHU TE SPLITTERI ]
+            </a>
+        </div>
+
+        <div class="paneli-djatht" id="pdf-shikues">
+            <p id="pdf-mesazh">▲ Zgjidhni skedarin Excel template për të filluar gjenerimin në varg.</p>
+        </div>
+    </div>
+
+    <script src="multi-print.js"></script>
+</body>
+</html>

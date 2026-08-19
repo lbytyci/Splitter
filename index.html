@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>✦ Splitter i Faturave: Vintage Edition ✦</title>
+    <title>✦ Splitter i Faturave ✦</title>
     <style>
-        
-        /* Dizajni */
         :root {
-            --bg-color: #1b192e;         
-            --panel-bg: #fffcf2;         
-            --accent-pink: #9f99d3;      
-            --accent-purple: #c3bef0;    
-            --text-dark: #232135;        
+            --bg-color: #1b192e;          
+            --panel-bg: #fffcf2;          
+            --accent-pink: #9f99d3;       
+            --accent-purple: #c3bef0;     
+            --text-dark: #232135;         
             --border-thick: 3px solid #1b192e;
             --retro-shadow: 5px 5px 0px #1b192e;
         }
@@ -18,7 +16,7 @@
         body { 
             font-family: 'Courier New', Courier, monospace; 
             font-weight: bold;
-            margin: 0; /* Heqim margin e jashtëm për shkak të shiritit sipër */
+            margin: 0;
             background-color: var(--bg-color); 
             color: #fff;
             background-image: radial-gradient(#3a3561 1px, transparent 1px); 
@@ -29,7 +27,6 @@
             flex-direction: column;
         }
 
-        /* SHIRITI I RI RETRO SIPËR */
         .custom-titlebar {
             height: 35px;
             background: #2b2640;
@@ -38,7 +35,7 @@
             justify-content: space-between;
             align-items: center;
             padding-left: 15px;
-            -webkit-app-region: drag; /* Kjo e bën dritaren të lëvizshme me maus */
+            -webkit-app-region: drag;
             user-select: none;
         }
 
@@ -51,7 +48,7 @@
         .titlebar-controls {
             display: flex;
             height: 100%;
-            -webkit-app-region: no-drag; /* Butonat nuk duhet të tërheqin dritaren */
+            -webkit-app-region: no-drag;
         }
 
         .win-btn {
@@ -82,7 +79,6 @@
         .win-btn-maximize:hover { background-color: #62589e; }
         .win-btn-close:hover { background-color: #ff6584; color: var(--text-dark); }
 
-        /* PËRMBAJTJA E PËRPANUAR */
         .Kontejneri { 
             display: flex; 
             gap: 20px; 
@@ -102,10 +98,9 @@
             color: var(--text-dark);
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Kjo e shtyn butonin e ri automatikisht në fund */
+            justify-content: space-between;
         }
 
-        /* Kontejneri për hapat që të mos ndikohen nga rregullimi i fundit */
         .hapat-grupi {
             display: flex;
             flex-direction: column;
@@ -219,7 +214,6 @@
             font-size: 16px;
         }
 
-        /* DIZAJNI I RI: MONOKROM, MINIMALIST DHE SERIOZ */
         .classic-link {
             display: block;
             text-align: center;
@@ -259,19 +253,18 @@
         </div>
     </div>
 
+
+
+
     <div class="Kontejneri">
         <div class="paneli-majt" id="hapat-kontejner">
-            <!-- Pjesa e lartë e panelit të majtë -->
             <div class="hapat-grupi">
                 <div id="hapi-1">
-                    <label>✦ Zgjidh Zonën:</label>
-                    <select id="zona">
-                        <option value="ARB">BARAZIMI - ARB</option>
-                        <option value="FK">BARAZIMI - FK</option>
-                    </select>
+                    <label>✦ Folderi Kryesor (Zona):</label>
+                    <input type="text" id="zona" placeholder="psh. BARAZIMI - ARB ose Folderi i Ri" value="BARAZIMI - ARB">
 
-                    <label>✦ Emri i Folderit të Ditës:</label>
-                    <input type="text" id="subFolder" value="26 Qershor 2026">
+                    <label>✦ Emri i Folderit të Ditës (Nënfolderi):</label>
+                    <input type="text" id="subFolder" placeholder="psh. 26 Qershor 2026" value="26 Qershor 2026">
 
                     <button onclick="kerkoFolderin()">Kërko Skedarët ➔</button>
                 </div>
@@ -281,7 +274,7 @@
                     <select id="skedaret-lista"></select>
                     
                     <label>✦ Pjesa e parë e emrit (Prefix):</label>
-                    <input type="text" id="prefix" value="PSI-FK-26-">
+                    <input type="text" id="prefix" value="PSI-ARB-26-">
 
                     <button onclick="niseSplit()">Nis Procesin [SPLIT] ⚙</button>
                 </div>
@@ -301,16 +294,18 @@
                 </div>
             </div>
 
-            <!-- BUTONI I INTEGRUAR NË FUND TË PANELIT TË MAJTË (PA ROZË DHE PA NEON) -->
             <a href="multi-print.html" class="classic-link">
                 [ GJENERUESI NË VARG ]
             </a>
+            
         </div>
 
         <div class="paneli-djatht" id="pdf-shikues">
             <p id="pdf-mesazh">▲ Sfondi gati. Dokumenti do të ngarkohet këtu...</p>
         </div>
     </div>
+
+
 
     <script>
         let finalPathGlobal = '';
@@ -334,9 +329,14 @@
         }
 
         async function kerkoFolderin() {
-            const zona = document.getElementById('zona').value;
-            const subFolder = document.getElementById('subFolder').value;
+            const zona = document.getElementById('zona').value.trim();
+            const subFolder = document.getElementById('subFolder').value.trim();
             
+            if (!zona) {
+                alert("Ju lutem shkruani emrin e folderit kryesor!");
+                return;
+            }
+
             try {
                 const { pdfFiles, finalPath } = await window.electronAPI.invoke('get-pdf-files', { zona, subFolder });
                 finalPathGlobal = finalPath;
@@ -350,7 +350,9 @@
                     select.appendChild(opt);
                 });
 
-                document.getElementById('prefix').value = zona === 'ARB' ? 'PSI-ARB-26-' : 'PSI-FK-26-';
+                const kodiIrajoni = zona.includes('-') ? zona.split('-')[1].trim() : zona;
+                document.getElementById('prefix').value = `PSI-${kodiIrajoni}-26-`;
+
                 document.getElementById('hapi-1').style.display = 'none';
                 document.getElementById('hapi-2').style.display = 'block';
             } catch (err) {
@@ -417,6 +419,7 @@
                 alert(err.message);
             }
         }
+       
     </script>
 </body>
 </html>
