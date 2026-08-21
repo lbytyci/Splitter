@@ -22,7 +22,6 @@ async function gjeneroFaturatMenyraA() {
     const startCode = document.getElementById('startCode').value.trim();
     const quantity = parseInt(document.getElementById('quantity').value, 10);
     
-    // Lexojmë 3 opsionet
     const keepExcel = document.getElementById('keepExcel').checked;
     const generatePdf = document.getElementById('generatePdf').checked;
     const mergePdf = document.getElementById('mergePdf').checked;

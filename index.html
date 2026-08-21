@@ -253,15 +253,12 @@
         </div>
     </div>
 
-
-
-
     <div class="Kontejneri">
         <div class="paneli-majt" id="hapat-kontejner">
             <div class="hapat-grupi">
                 <div id="hapi-1">
                     <label>✦ Folderi Kryesor (Zona):</label>
-                    <input type="text" id="zona" placeholder="psh. BARAZIMI - ARB ose Folderi i Ri" value="BARAZIMI - ARB">
+                    <input type="text" id="zona" placeholder="psh. BARAZIMI - FK ose BARAZIMI - ARB" value="BARAZIMI - FK">
 
                     <label>✦ Emri i Folderit të Ditës (Nënfolderi):</label>
                     <input type="text" id="subFolder" placeholder="psh. 26 Qershor 2026" value="26 Qershor 2026">
@@ -274,7 +271,7 @@
                     <select id="skedaret-lista"></select>
                     
                     <label>✦ Pjesa e parë e emrit (Prefix):</label>
-                    <input type="text" id="prefix" value="PSI-ARB-26-">
+                    <input type="text" id="prefix" value="PSI-FK-26-">
 
                     <button onclick="niseSplit()">Nis Procesin [SPLIT] ⚙</button>
                 </div>
@@ -304,8 +301,6 @@
             <p id="pdf-mesazh">▲ Sfondi gati. Dokumenti do të ngarkohet këtu...</p>
         </div>
     </div>
-
-
 
     <script>
         let finalPathGlobal = '';
@@ -350,8 +345,16 @@
                     select.appendChild(opt);
                 });
 
-                const kodiIrajoni = zona.includes('-') ? zona.split('-')[1].trim() : zona;
-                document.getElementById('prefix').value = `PSI-${kodiIrajoni}-26-`;
+                // Nxjerrja e prefix-it automatikisht (p.sh., nga "BARAZIMI - FK" nxjerr "FK")
+                let kodiIrajoni = zona;
+                if (zona.includes('-')) {
+                    kodiIrajoni = zona.split('-')[1].trim();
+                } else if (zona.includes(' ')) {
+                    const pjese = zona.split(' ');
+                    kodiIrajoni = pjese[pjese.length - 1].trim();
+                }
+
+                document.getElementById('prefix').value = `PSI-${kodiIrajoni.toUpperCase()}-26-`;
 
                 document.getElementById('hapi-1').style.display = 'none';
                 document.getElementById('hapi-2').style.display = 'block';
@@ -364,7 +367,7 @@
             const skedariMadh = document.getElementById('skedaret-lista').value;
             const filePath = finalPathGlobal + '/' + skedariMadh;
 
-            document.getElementById('pdf-mesazh').innerHTML = "⏳ DUKE NDARË FATURAT... JU LUTEM PRISNI...";
+            document.getElementById('pdf-shikues').innerHTML = '<p id="pdf-mesazh">⏳ DUKE NDARË FATURAT... JU LUTEM PRISNI...</p>';
 
             try {
                 skedaretNdarëGlobal = await window.electronAPI.invoke('split-pdf', { filePath, finalPath: finalPathGlobal });
@@ -419,7 +422,6 @@
                 alert(err.message);
             }
         }
-       
     </script>
 </body>
 </html>

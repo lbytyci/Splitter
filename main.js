@@ -28,6 +28,7 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
 
+// Kontrollet e dritares
 ipcMain.on('minimize-window', () => { if (mainWindow) mainWindow.minimize(); });
 ipcMain.on('maximize-window', () => {
     if (mainWindow) {
@@ -36,6 +37,92 @@ ipcMain.on('maximize-window', () => {
     }
 });
 ipcMain.on('close-window', () => { if (mainWindow) mainWindow.close(); });
+
+// ==========================================
+// 1. HANDLERS PËR SPLITTERIN (INDEX.HTML)
+// ==========================================
+
+ipcMain.handle('get-pdf-files', async (event, { zona, subFolder }) => {
+    const desktopPath = app.getPath('desktop');
+    let finalPath = path.join(desktopPath, zona);
+
+    // Nëse është shkruar subFolder, kontrollojmë nëse ekziston azhurnimi i plotë i rrugës
+    if (subFolder && subFolder.trim() !== '') {
+        const testPath = path.join(finalPath, subFolder.trim());
+        if (fs.existsSync(testPath)) {
+            finalPath = testPath;
+        }
+    }
+
+    if (!fs.existsSync(finalPath)) {
+        throw new Error(`Folderi nuk u gjet në Desktop:\n${finalPath}`);
+    }
+
+    const files = fs.readdirSync(finalPath);
+    const pdfFiles = files.filter(f => f.toLowerCase().endsWith('.pdf'));
+
+    if (pdfFiles.length === 0) {
+        throw new Error(`Nuk u gjet asnjë skedar PDF në folderin:\n${finalPath}`);
+    }
+
+    return { pdfFiles, finalPath };
+});
+
+ipcMain.handle('split-pdf', async (event, { filePath, finalPath }) => {
+    if (!fs.existsSync(filePath)) throw new Error("Skedari nuk ekziston!");
+
+    const pdfBytes = fs.readFileSync(filePath);
+    const mainDoc = await PDFDocument.load(pdfBytes);
+    const pageCount = mainDoc.getPageCount();
+
+    const tempFolder = path.join(finalPath, 'TEMP_SPLIT');
+    if (!fs.existsSync(tempFolder)) {
+        fs.mkdirSync(tempFolder, { recursive: true });
+    }
+
+    const rezultatet = [];
+
+    for (let i = 0; i < pageCount; i++) {
+        const newDoc = await PDFDocument.create();
+        const [copiedPage] = await newDoc.copyPages(mainDoc, [i]);
+        newDoc.addPage(copiedPage);
+
+        const pdfBase64 = await newDoc.saveAsBase64();
+        const pdfBuffer = await newDoc.save();
+
+        const tempFilePath = path.join(tempFolder, `temp_fatura_${i + 1}.pdf`);
+        fs.writeFileSync(tempFilePath, pdfBuffer);
+
+        rezultatet.push({
+            rrugaPerkohshme: tempFilePath,
+            base64: pdfBase64
+        });
+    }
+
+    return rezultatet;
+});
+
+ipcMain.handle('rename-invoice', async (event, { oldPath, finalPath, prefix, number }) => {
+    if (!fs.existsSync(oldPath)) throw new Error("Fatura e përkohshme nuk u gjet!");
+
+    const emriIRi = `${prefix}${number}.pdf`;
+    const rrugaERi = path.join(finalPath, emriIRi);
+
+    fs.renameSync(oldPath, rrugaERi);
+
+    // Pastro folderin TEMP nëse është bosh
+    const tempFolder = path.dirname(oldPath);
+    const mbetjet = fs.readdirSync(tempFolder);
+    if (mbetjet.length === 0) {
+        try { fs.rmdirSync(tempFolder); } catch (e) {}
+    }
+
+    return { success: true, newPath: rrugaERi };
+});
+
+// ==========================================
+// 2. HANDLERS PËR GJENERUESIN (MULTI-PRINT)
+// ==========================================
 
 ipcMain.handle('read-template-code', async (event, filePath) => {
     if (!fs.existsSync(filePath)) throw new Error("Skedari nuk ekziston!");
@@ -74,7 +161,6 @@ ipcMain.handle('generate-batch-excel', async (event, { templatePath, startCode, 
 
     const createdFiles = [];
 
-    // 1. Krijimi i skedarëve Excel
     for (let i = 0; i < quantity; i++) {
         let currentNum = startNumber + i;
         let formattedNum = String(currentNum).padStart(paddingLength, '0');
@@ -100,7 +186,6 @@ ipcMain.handle('generate-batch-excel', async (event, { templatePath, startCode, 
     let mergedPdfPath = null;
     const shouldNeedPdf = generatePdf || mergePdf;
 
-    // 2. Konvertimi në PDF nëse është zgjedhur PDF ose Merge
     if (shouldNeedPdf) {
         let scriptContent = `$excel = New-Object -ComObject Excel.Application\n`;
         scriptContent += `$excel.Visible = $false\n`;
@@ -128,7 +213,6 @@ ipcMain.handle('generate-batch-excel', async (event, { templatePath, startCode, 
             }
         }
 
-        // 3. Bashkimi (Merge) i PDF-ve
         if (mergePdf) {
             const mergedPdf = await PDFDocument.create();
 
@@ -149,7 +233,6 @@ ipcMain.handle('generate-batch-excel', async (event, { templatePath, startCode, 
             fs.writeFileSync(mergedPdfPath, mergedBytes);
         }
 
-        // Nëse përdoruesi NUK donte PDF-të individuale po vetëm atë të bashkuar
         if (!generatePdf && mergePdf) {
             for (const item of createdFiles) {
                 if (fs.existsSync(item.pdfPath)) {
@@ -159,7 +242,6 @@ ipcMain.handle('generate-batch-excel', async (event, { templatePath, startCode, 
         }
     }
 
-    // 4. Pastrimi i skedarëve Excel nëse përdoruesi NUK zgjodhi 'keepExcel'
     if (!keepExcel) {
         for (const item of createdFiles) {
             if (fs.existsSync(item.excelPath)) {
@@ -168,7 +250,6 @@ ipcMain.handle('generate-batch-excel', async (event, { templatePath, startCode, 
         }
     }
 
-    // 5. Printim ose Hapje e Folderit
     if (autoPrint) {
         const fileToPrint = mergedPdfPath || createdFiles[0].pdfPath || createdFiles[0].excelPath;
         if (fileToPrint && fs.existsSync(fileToPrint)) {
